@@ -5,7 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.wang.model.common.BaseDto;
 import com.wang.model.valid.group.UserEditValidGroup;
 import com.wang.model.valid.group.UserLoginValidGroup;
-import com.wang.util.JedisUtil;
+import com.wang.util.RedisUtil;
 import com.wang.exception.CustomException;
 import com.wang.exception.CustomUnauthorizedException;
 import com.wang.model.UserDto;
@@ -91,16 +91,16 @@ public class UserController {
     public ResponseBean online(){
         List<Object> userDtos = new ArrayList<Object>();
         // 查询所有Redis键
-        Set<String> keys = JedisUtil.keysS(Constant.PREFIX_SHIRO_REFRESH_TOKEN + "*");
+        Set<String> keys = RedisUtil.scan(Constant.PREFIX_SHIRO_REFRESH_TOKEN + "*");
         for (String key : keys) {
-            if(JedisUtil.exists(key)){
+            if(RedisUtil.exists(key)){
                 // 根据:分割key，获取最后一个字符(帐号)
                 String[] strArray = key.split(":");
                 UserDto userDto = new UserDto();
                 userDto.setAccount(strArray[strArray.length - 1]);
                 userDto = userService.selectOne(userDto);
                 // 设置登录时间
-                userDto.setLoginTime(new Date(Long.parseLong(JedisUtil.getObject(key).toString())));
+                userDto.setLoginTime(new Date(Long.parseLong(RedisUtil.getObject(key).toString())));
                 userDtos.add(userDto);
             }
         }
@@ -131,12 +131,12 @@ public class UserController {
         // 因为密码加密是以帐号+密码的形式进行加密的，所以解密后的对比是帐号+密码
         if (key.equals(userDto.getAccount() + userDto.getPassword())) {
             // 清除可能存在的Shiro权限信息缓存
-            if(JedisUtil.exists(Constant.PREFIX_SHIRO_CACHE + userDto.getAccount())){
-                JedisUtil.delKey(Constant.PREFIX_SHIRO_CACHE + userDto.getAccount());
+            if(RedisUtil.exists(Constant.PREFIX_SHIRO_CACHE + userDto.getAccount())){
+                RedisUtil.delKey(Constant.PREFIX_SHIRO_CACHE + userDto.getAccount());
             }
             // 设置RefreshToken，时间戳为当前时间戳，直接设置即可(不用先删后设，会覆盖已有的RefreshToken)
             String currentTimeMillis = String.valueOf(System.currentTimeMillis());
-            JedisUtil.setObject(Constant.PREFIX_SHIRO_REFRESH_TOKEN + userDto.getAccount(), currentTimeMillis, Integer.parseInt(refreshTokenExpireTime));
+            RedisUtil.setObject(Constant.PREFIX_SHIRO_REFRESH_TOKEN + userDto.getAccount(), currentTimeMillis, Integer.parseInt(refreshTokenExpireTime));
             // 从Header中Authorization返回AccessToken，时间戳为当前时间戳
             String token = JwtUtil.sign(userDto.getAccount(), currentTimeMillis);
             httpServletResponse.setHeader("Authorization", token);
@@ -289,10 +289,9 @@ public class UserController {
     @RequiresPermissions(logical = Logical.AND, value = {"user:edit"})
     public ResponseBean deleteOnline(@PathVariable("id") Integer id){
         UserDto userDto = userService.selectByPrimaryKey(id);
-        if(JedisUtil.exists(Constant.PREFIX_SHIRO_REFRESH_TOKEN + userDto.getAccount())){
-            if(JedisUtil.delKey(Constant.PREFIX_SHIRO_REFRESH_TOKEN + userDto.getAccount()) > 0){
-                return new ResponseBean(HttpStatus.OK.value(), "剔除成功(Delete Success)", null);
-            }
+        if(RedisUtil.exists(Constant.PREFIX_SHIRO_REFRESH_TOKEN + userDto.getAccount())){
+            RedisUtil.delKey(Constant.PREFIX_SHIRO_REFRESH_TOKEN + userDto.getAccount());
+            return new ResponseBean(HttpStatus.OK.value(), "剔除成功(Delete Success)", null);
         }
         throw new CustomException("剔除失败，Account不存在(Deletion Failed. Account does not exist.)");
     }

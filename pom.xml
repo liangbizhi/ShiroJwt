@@ -112,10 +112,16 @@
         </dependency>
 
         <!-- Redis-Jedis -->
+        <!--<dependency>-->
+            <!--<groupId>redis.clients</groupId>-->
+            <!--<artifactId>jedis</artifactId>-->
+            <!--<version>${jedis.version}</version>-->
+        <!--</dependency>-->
+
+        <!--换用spring data redis-->
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>${jedis.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
     </dependencies>
@@ -145,31 +151,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.0.0</version>
-            </plugin>
-            <!-- Mybatis Generator 逆向工程 -->
-            <plugin>
-                <groupId>org.mybatis.generator</groupId>
-                <artifactId>mybatis-generator-maven-plugin</artifactId>
-                <version>1.3.6</version>
-                <configuration>
-                    <configurationFile>
-                        src/main/resources/generator/generatorConfig.xml
-                    </configurationFile>
-                    <overwrite>true</overwrite>
-                    <verbose>true</verbose>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>5.1.46</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>tk.mybatis</groupId>
-                        <artifactId>mapper-spring-boot-starter</artifactId>
-                        <version>${mapper.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>

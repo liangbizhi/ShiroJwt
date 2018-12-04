@@ -126,6 +126,7 @@ public class ExceptionAdvice {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ResponseBean globalException(HttpServletRequest request, Throwable ex) {
+        ex.printStackTrace();
         return new ResponseBean(this.getStatus(request).value(), ex.toString() + ": " + ex.getMessage(), null);
     }
 

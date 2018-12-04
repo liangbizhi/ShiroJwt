@@ -5,7 +5,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.wang.exception.CustomException;
 import com.wang.model.common.Constant;
 import com.wang.model.common.ResponseBean;
-import com.wang.util.JedisUtil;
+import com.wang.util.RedisUtil;
 import com.wang.util.JwtUtil;
 import com.wang.util.common.JsonConvertUtil;
 import com.wang.util.common.PropertiesUtil;
@@ -128,9 +128,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         // 获取当前Token的帐号信息
         String account = JwtUtil.getClaim(token, Constant.ACCOUNT);
         // 判断Redis中RefreshToken是否存在
-        if(JedisUtil.exists(Constant.PREFIX_SHIRO_REFRESH_TOKEN + account)){
+        if(RedisUtil.exists(Constant.PREFIX_SHIRO_REFRESH_TOKEN + account)){
             // Redis中RefreshToken还存在，获取RefreshToken的时间戳
-            String currentTimeMillisRedis = JedisUtil.getObject(Constant.PREFIX_SHIRO_REFRESH_TOKEN + account).toString();
+            String currentTimeMillisRedis = RedisUtil.getObject(Constant.PREFIX_SHIRO_REFRESH_TOKEN + account).toString();
             // 获取当前AccessToken中的时间戳，与RefreshToken的时间戳对比，如果当前时间戳一致，进行AccessToken刷新
             if(JwtUtil.getClaim(token, Constant.CURRENT_TIME_MILLIS).equals(currentTimeMillisRedis)){
                 // 获取当前最新时间戳
@@ -139,7 +139,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
                 PropertiesUtil.readProperties("config.properties");
                 String refreshTokenExpireTime = PropertiesUtil.getProperty("refreshTokenExpireTime");
                 // 设置RefreshToken中的时间戳为当前最新时间戳，且刷新过期时间重新为30分钟过期(配置文件可配置refreshTokenExpireTime属性)
-                JedisUtil.setObject(Constant.PREFIX_SHIRO_REFRESH_TOKEN + account, currentTimeMillis, Integer.parseInt(refreshTokenExpireTime));
+                RedisUtil.setObject(Constant.PREFIX_SHIRO_REFRESH_TOKEN + account, currentTimeMillis, Integer.parseInt(refreshTokenExpireTime));
                 // 刷新AccessToken，设置时间戳为当前最新时间戳
                 token = JwtUtil.sign(account, currentTimeMillis);
                 // 将新刷新的AccessToken再次进行Shiro的登录

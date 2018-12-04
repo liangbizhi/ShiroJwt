@@ -1,12 +1,9 @@
 package com.wang.config.shiro.cache;
 
-import com.wang.util.JwtUtil;
-import com.wang.util.JedisUtil;
 import com.wang.model.common.Constant;
+import com.wang.util.*;
 import com.wang.util.common.PropertiesUtil;
-import com.wang.util.common.SerializableUtil;
-import org.apache.shiro.cache.Cache;
-import org.apache.shiro.cache.CacheException;
+import org.apache.shiro.cache.*;
 
 import java.util.*;
 
@@ -33,10 +30,10 @@ public class CustomCache<K,V> implements Cache<K,V> {
      */
     @Override
     public Object get(Object key) throws CacheException {
-        if(!JedisUtil.exists(this.getKey(key))){
+        if(!RedisUtil.exists(this.getKey(key))){
             return null;
         }
-        return JedisUtil.getObject(this.getKey(key));
+        return RedisUtil.getObject(this.getKey(key));
     }
 
     /**
@@ -48,7 +45,8 @@ public class CustomCache<K,V> implements Cache<K,V> {
         PropertiesUtil.readProperties("config.properties");
         String shiroCacheExpireTime = PropertiesUtil.getProperty("shiroCacheExpireTime");
         // 设置Redis的Shiro缓存
-        return JedisUtil.setObject(this.getKey(key), value, Integer.parseInt(shiroCacheExpireTime));
+        RedisUtil.setObject(this.getKey(key), value, Integer.parseInt(shiroCacheExpireTime));
+        return null;
     }
 
     /**
@@ -56,19 +54,15 @@ public class CustomCache<K,V> implements Cache<K,V> {
      */
     @Override
     public Object remove(Object key) throws CacheException {
-        if(!JedisUtil.exists(this.getKey(key))){
+        if(!RedisUtil.exists(this.getKey(key))){
             return null;
         }
-        JedisUtil.delKey(this.getKey(key));
+        RedisUtil.delKey(this.getKey(key));
         return null;
     }
 
-    /**
-     * 清空所有缓存
-     */
     @Override
     public void clear() throws CacheException {
-        JedisUtil.getJedis().flushDB();
     }
 
     /**
@@ -76,8 +70,7 @@ public class CustomCache<K,V> implements Cache<K,V> {
      */
     @Override
     public int size() {
-        Long size = JedisUtil.getJedis().dbSize();
-        return size.intValue();
+        return RedisUtil.dbSize().intValue();
     }
 
     /**
@@ -85,12 +78,7 @@ public class CustomCache<K,V> implements Cache<K,V> {
      */
     @Override
     public Set keys() {
-        Set<byte[]> keys = JedisUtil.getJedis().keys(new String("*").getBytes());
-        Set<Object> set = new HashSet<Object>();
-        for (byte[] bs : keys) {
-            set.add(SerializableUtil.unserializable(bs));
-        }
-        return set;
+        return RedisUtil.scan(Constant.PREFIX_SHIRO_CACHE + "*");
     }
 
     /**
@@ -101,7 +89,7 @@ public class CustomCache<K,V> implements Cache<K,V> {
         Set keys = this.keys();
         List<Object> values = new ArrayList<Object>();
         for (Object key : keys) {
-            values.add(JedisUtil.getObject(this.getKey(key)));
+            values.add(RedisUtil.getObject(this.getKey(key)));
         }
         return values;
     }
