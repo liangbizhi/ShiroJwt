@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * JedisUtil(推荐存Byte数组，存Json字符串效率更慢)
+ * RedisUtil(推荐存Byte数组，存Json字符串效率更慢)
  * @author Wang926454
  * @date 2018/9/4 15:45
  */
@@ -17,20 +17,16 @@ import java.util.concurrent.TimeUnit;
 public class RedisUtil {
 
     /**
-     * 静态注入JedisPool连接池
-     * 本来是正常注入JedisUtil，可以在Controller和Service层使用，但是重写Shiro的CustomCache无法注入JedisUtil
-     * 现在改为静态注入JedisPool连接池，JedisUtil直接调用静态方法即可
+     * 静态注入RedisTemplate
+     * 本来是正常注入RedisUtil，可以在Controller和Service层使用，但是重写Shiro的CustomCache无法注入RedisUtil
+     * 现在改为静态注入RedisTemplate，RedisUtil直接调用静态方法即可
      * https://blog.csdn.net/W_Z_W_888/article/details/79979103
      */
     private static RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
-    public static void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
+    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
         RedisUtil.redisTemplate = redisTemplate;
-    }
-
-    public static RedisTemplate<String, Object> getRedisTemplate() {
-        return redisTemplate;
     }
 
     public static Long dbSize() {
