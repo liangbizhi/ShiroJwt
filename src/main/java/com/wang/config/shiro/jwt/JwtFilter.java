@@ -44,6 +44,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
+        LOGGER.info("[Shiro|JwtFilter] isAccessAllowed(ServletRequest, ServletResponse, Object)");
         // 判断用户是否想要登入
         if (this.isLoginAttempt(request, response)) {
             try {
@@ -92,6 +93,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
+        LOGGER.info("[Shiro|JwtFilter] onAccessDenied(ServletRequest, ServletResponse)");
         this.sendChallenge(request, response);
         return false;
     }
@@ -101,6 +103,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean isLoginAttempt(ServletRequest request, ServletResponse response) {
+        LOGGER.info("[Shiro|JwtFilter] isLoginAttempt(ServletRequest, ServletResponse)");
         // 拿到当前Header中Authorization的AccessToken(Shiro中getAuthzHeader方法已经实现)
         String token = this.getAuthzHeader(request);
         return token != null;
@@ -111,6 +114,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
+        LOGGER.info("[Shiro|JwtFilter] executeLogin(ServletRequest, ServletResponse)");
         // 拿到当前Header中Authorization的AccessToken(Shiro中getAuthzHeader方法已经实现)
         JwtToken token = new JwtToken(this.getAuthzHeader(request));
         // 提交给UserRealm进行认证，如果错误他会抛出异常并被捕获
@@ -184,6 +188,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean preHandle(ServletRequest request, ServletResponse response) throws Exception {
+        LOGGER.info("[Shiro|JwtFilter] preHandle(ServletRequest, ServletResponse)");
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         httpServletResponse.setHeader("Access-control-Allow-Origin", httpServletRequest.getHeader("Origin"));

@@ -1,24 +1,16 @@
 package com.wang.config.shiro;
 
-import com.wang.config.shiro.jwt.JwtToken;
-import com.wang.util.RedisUtil;
-import com.wang.mapper.PermissionMapper;
-import com.wang.mapper.RoleMapper;
-import com.wang.mapper.UserMapper;
-import com.wang.model.PermissionDto;
-import com.wang.model.RoleDto;
-import com.wang.model.UserDto;
+import com.wang.config.shiro.jwt.*;
+import com.wang.mapper.*;
+import com.wang.model.*;
 import com.wang.model.common.Constant;
-import com.wang.util.JwtUtil;
+import com.wang.util.*;
 import com.wang.util.common.StringUtil;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.SimpleAuthenticationInfo;
-import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.authc.*;
+import org.apache.shiro.authz.*;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +23,8 @@ import java.util.List;
  */
 @Service
 public class UserRealm extends AuthorizingRealm {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtFilter.class);
 
     private final UserMapper userMapper;
     private final RoleMapper roleMapper;
@@ -56,6 +50,7 @@ public class UserRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+        LOGGER.info("[Shiro|Realm] doGetAuthorizationInfo(PrincipalCollection)");
         SimpleAuthorizationInfo simpleAuthorizationInfo = new SimpleAuthorizationInfo();
         String account = JwtUtil.getClaim(principals.toString(), Constant.ACCOUNT);
         UserDto userDto = new UserDto();
@@ -82,6 +77,7 @@ public class UserRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth) throws AuthenticationException {
+        LOGGER.info("[Shiro|Realm] doGetAuthenticationInfo(AuthenticationToken)");
         String token = (String) auth.getCredentials();
         // 解密获得account，用于和数据库进行对比
         String account = JwtUtil.getClaim(token, Constant.ACCOUNT);

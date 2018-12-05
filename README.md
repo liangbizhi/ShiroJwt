@@ -1,5 +1,11 @@
 # ShiroJwt
 
+### 修改：
+
+* 换用spring-data-redis
+
+------------
+
 > 前端地址:[https://github.com/wang926454/VueStudy/tree/master/VueStudy08-JWT](https://github.com/wang926454/VueStudy/tree/master/VueStudy08-JWT)
 
 ### 项目相关
